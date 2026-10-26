@@ -68,26 +68,33 @@ export default function MotionEffects() {
     document.querySelectorAll(".hero-copy, .profile-panel, .section-heading, .research-item, .record, .empty-state, .document-banner, .page-heading, .content-section").forEach(el => reveal.observe(el));
 
     const hero = document.querySelector<HTMLElement>(".hero");
+    const atmosphere = document.querySelector<HTMLElement>(".site-atmosphere");
     const visibility = new IntersectionObserver(entries => {
       if (hero) hero.dataset.inView = String(entries[0].isIntersecting);
     });
     if (hero) visibility.observe(hero);
     let pointerFrame = 0;
     const move = (event: PointerEvent) => {
-      if (event.pointerType !== "mouse" || !hero) return;
+      if (event.pointerType !== "mouse") return;
       cancelAnimationFrame(pointerFrame);
       pointerFrame = requestAnimationFrame(() => {
-        const rect = hero.getBoundingClientRect();
-        hero.style.setProperty("--pointer-x", `${event.clientX - rect.left}px`);
-        hero.style.setProperty("--pointer-y", `${event.clientY - rect.top}px`);
+        atmosphere?.style.setProperty("--pointer-x", `${event.clientX}px`);
+        atmosphere?.style.setProperty("--pointer-y", `${event.clientY}px`);
+        if (hero) {
+          const rect = hero.getBoundingClientRect();
+          hero.style.setProperty("--pointer-x", `${event.clientX - rect.left}px`);
+          hero.style.setProperty("--pointer-y", `${event.clientY - rect.top}px`);
+        }
       });
     };
-    hero?.addEventListener("pointermove", move, { passive: true });
+    window.addEventListener("pointermove", move, { passive: true });
     return () => {
       reveal.disconnect();
       visibility.disconnect();
       animations.forEach(animation => animation.cancel());
-      hero?.removeEventListener("pointermove", move);
+      window.removeEventListener("pointermove", move);
+      atmosphere?.style.removeProperty("--pointer-x");
+      atmosphere?.style.removeProperty("--pointer-y");
       hero?.style.removeProperty("--pointer-x");
       hero?.style.removeProperty("--pointer-y");
       cancelAnimationFrame(pointerFrame);
